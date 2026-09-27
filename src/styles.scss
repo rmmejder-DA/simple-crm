@@ -7,16 +7,12 @@
 
 html {
   height: 100%;
-  @include mat.theme(
-    (
-      color: (
-        primary: mat.$azure-palette,
+  @include mat.theme((color: (primary: mat.$azure-palette,
         tertiary: mat.$blue-palette,
       ),
       typography: Roboto,
       density: 0,
-    )
-  );
+    ));
 }
 
 body {
@@ -36,4 +32,34 @@ body {
   margin: 0;
   height: 100%;
 }
+
+p {
+  margin: 0;
+}
+
+.cdk-overlay-pane.mat-mdc-dialog-panel {
+  width: auto;
+  height: auto;
+  min-height: 500px;
+}
+
+.mat-mdc-dialog-content> :first-child,
+.margin-top-16 {
+  margin-bottom: 12px;
+  margin-top: 12px !important;
+}
+
+.mat-mdc-dialog-container .mat-mdc-dialog-title+.mat-mdc-dialog-content {
+  height: 270px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.mat-datepicker-content .mat-calendar {
+  width: 183px !important;
+  height: 248px !important;
+}
+
 /* You can add global styles to this file, and also import other style files */
