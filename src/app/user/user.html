@@ -2,3 +2,9 @@
     [matTooltipPosition]="'above'" matTooltipHideDelay="100">
     <span class="material-icons" aria-hidden="true">add</span>
 </button>
+
+<ul>
+    @for (user of (users$ | async); track user.id) {
+        <li>{{ user.firstName }} {{ user.lastName }}</li>
+    }
+</ul>
