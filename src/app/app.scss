@@ -4,7 +4,6 @@
     box-sizing: border-box;
 }
 
-
 .mat-drawer-container {
     height: 100vh !important;
     border-right: 0.5px solid rgba($color: #000000, $alpha: 0.25) !important;
@@ -61,5 +60,9 @@
 
 .router-container {
     padding-left: 56px;
+    padding-right: 56px;
     padding-top: 16px;
+}
+img{
+    width: 56px;
 }

@@ -3,8 +3,18 @@
     <span class="material-icons" aria-hidden="true">add</span>
 </button>
 
-<ul>
-    @for (user of (users$ | async); track user.id) {
-        <li>{{ user.firstName }} {{ user.lastName }}</li>
-    }
-</ul>
+<mat-card appearance="outlined">
+    <table class="mat-elevation-z8">
+        <tr>
+            <th>Name</th>
+            <th>E-mail</th>
+            <th>City</th>
+        </tr>
+        <tr *ngFor="let user of allUsers; trackBy: trackByUserId" [routerLink]="'/user/' + user.id">
+            <td>{{ user.firstName }} {{ user.lastName }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.city }}</td>
+        </tr>
+    </table>
+        
+</mat-card>

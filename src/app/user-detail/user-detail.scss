@@ -1,0 +1,57 @@
+.user-detail-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+
+  .back-button {
+    margin-bottom: 20px;
+  }
+
+  .loading {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+  }
+
+  .error {
+    padding: 15px;
+    background-color: #ffebee;
+    border-left: 4px solid #f44336;
+    color: #c62828;
+    margin-bottom: 20px;
+    border-radius: 4px;
+  }
+
+  mat-card {
+    h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 24px;
+      font-weight: 500;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #e0e0e0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      label {
+        font-weight: 600;
+        color: #333;
+        min-width: 120px;
+      }
+
+      span {
+        color: #666;
+        text-align: right;
+        flex: 1;
+      }
+    }
+  }
+}

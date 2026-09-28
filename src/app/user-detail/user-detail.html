@@ -1,0 +1,24 @@
+<div class="user-detail-container">
+
+    <div class="back-button">
+        <button mat-raised-button routerLink="/user">← Zurück zur Benutzerliste</button>
+    </div>
+
+    @if (user$ | async; as user) {
+    <mat-card>
+        <mat-card-content>
+            <h2>{{ user.firstName }} {{ user.lastName }}</h2>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Geburtsdatum:</strong> {{ user.birthDate | date }}</p>
+        </mat-card-content>
+    </mat-card>
+    } @else if (loading) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+
+
+    } @else {
+    <p class="error">Benutzer nicht gefunden</p>
+    }
+
+
+</div>

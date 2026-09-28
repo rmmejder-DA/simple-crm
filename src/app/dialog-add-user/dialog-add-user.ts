@@ -50,7 +50,7 @@ export class DialogAddUser {
       );
       console.log('user added', this.user);
       // 2 Sekunden warten, dann Dialog schließen
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       this.dialogRef.close();
     } catch (error) {
       console.error('Fehler beim Speichern in Firestore:', error);
