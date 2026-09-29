@@ -36,11 +36,10 @@ body {
 p {
   margin: 0;
 }
-
+.mat-mdc-dialog-component-host,
 .cdk-overlay-pane.mat-mdc-dialog-panel {
   width: auto;
-  height: auto;
-  min-height: 500px;
+  min-height: 560px;
 }
 
 .mat-mdc-dialog-content> :first-child,

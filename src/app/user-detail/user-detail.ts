@@ -1,105 +1,156 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectionStrategy, ChangeDetectorRef, EnvironmentInjector } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectionStrategy, EnvironmentInjector, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { map } from 'rxjs/operators';
+import { map, tap, switchMap, catchError } from 'rxjs/operators';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Firestore, doc, docData } from '@angular/fire/firestore';
+import { Firestore, doc, docData, updateDoc } from '@angular/fire/firestore';
 import { User } from '../../models/user.class';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { switchMap, tap, catchError, takeUntil } from 'rxjs/operators';
-import { Subject, EMPTY } from 'rxjs';
+import { EMPTY, Observable, Subject } from 'rxjs';
 import { runInInjectionContext } from '@angular/core';
-import {MatProgressBarModule} from '@angular/material/progress-bar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { DialogEdit } from '../dialog-edit/dialog-edit';
 
+/** Component for displaying detailed user information. */
 @Component({
   selector: 'app-user-detail',
-  imports: [CommonModule, DatePipe, RouterLink, MatButtonModule, MatCardModule, MatProgressBarModule],
+  imports: [
+    CommonModule,
+    DatePipe,
+    RouterLink,
+    MatMenuModule,
+    MatButtonModule,
+    MatCardModule,
+    MatProgressBarModule,
+    MatIconModule,
+    MatDialogModule,
+  ],
   templateUrl: './user-detail.html',
   styleUrl: './user-detail.scss',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UserDetail {
+export class UserDetail implements OnInit, OnDestroy {
   firestore = inject(Firestore);
   route = inject(ActivatedRoute);
-  private _isLoading = true;
-  public get loading() {
-    return this._isLoading;
-  }
-  public set loading(value) {
-    this._isLoading = value;
-  }
-  user: User | null = null;
   cdr = inject(ChangeDetectorRef);
+  dialog = inject(MatDialog);
   readonly injector = inject(EnvironmentInjector);
-  user$ = this.route.paramMap.pipe(
-    switchMap(params => {
-      const userId = params.get('id');
-      if (!userId) return EMPTY;
 
-      const userDocRef = doc(this.firestore, 'users', userId);
-      return docData(userDocRef, { idField: 'id' }).pipe(
-        map(data => new User(data))
-      );
-    })
-  );
-
-  
+  loading = true;
   error: string | null = null;
+  user$!: Observable<User>;
+  currentUser: User | null = null;
+
   private destroy$ = new Subject<void>();
 
-  ngOnInit() {
-    this.route.paramMap
-      .pipe(
-        tap(() => {
-          this.loading = true;
-          this.user = null;
-          this.error = null;
-          this.cdr.markForCheck();
-        }),
-        switchMap(params => {
-          const userId = params.get('id');
-          console.log('User ID from route:', userId);
-
-          if (!userId) {
-            this.error = 'Keine Benutzer-ID angegeben';
-            this.loading = false;
-            this.cdr.markForCheck();
-            return EMPTY;
-          }
-
-          console.log('Loading user from Firestore:', userId);
-          
-          return runInInjectionContext(this.injector, () => {
-            const userDocRef = doc(this.firestore, 'users', userId);
-            return docData(userDocRef, { idField: 'id' });
-          });
-        }), 
-        tap((data: any) => {
-          console.log('User data received:', data);
-          if (data) {
-            this.user = new User(data);
-            this.error = null;
-          } else {
-            this.error = 'Benutzer nicht gefunden';
-            console.warn('No user data received');
-          }
-          this.loading = false;
-          this.cdr.markForCheck();
-        }),
-        catchError((err) => {
-          console.error('Error loading user:', err);
-          this.error = 'Fehler beim Laden: ' + err.message;
-          this.loading = false;
-          this.cdr.markForCheck();
-          return EMPTY;
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe();
+  /** Initialize component and load user data. */
+  ngOnInit(): void {
+    this.user$ = this.route.paramMap.pipe(
+      switchMap((params) => this.loadUserData(params.get('id'))),
+      catchError((err) => this.handleError(err))
+    );
+    this.user$.subscribe();
   }
 
-  ngOnDestroy() {
+  /**
+   * Load user data from Firestore.
+   * @param userId - The user ID to load
+   */
+  private loadUserData(userId: string | null): Observable<User> {
+    if (!userId) {
+      this.setError('No user ID provided');
+      return EMPTY;
+    }
+    this.setLoading(true);
+    return runInInjectionContext(this.injector, () =>
+      docData(doc(this.firestore, 'users', userId), {
+        idField: 'id',
+      }).pipe(
+        map((data) => new User(data)),
+        tap((user) => this.onUserLoaded(user))
+      )
+    );
+  }
+
+  /**
+   * Handle user loaded successfully.
+   * @param user - The loaded user data
+   */
+  private onUserLoaded(user: User): void {
+    this.currentUser = user;
+    this.setLoading(false);
+  }
+
+  /**
+   * Handle loading error.
+   * @param err - The error object
+   */
+  private handleError(err: unknown): Observable<never> {
+    const message =
+      err instanceof Error ? err.message : 'Unknown error';
+    this.setError(`Error loading: ${message}`);
+    return EMPTY;
+  }
+
+  /** Set loading state and trigger change detection. */
+  private setLoading(loading: boolean): void {
+    this.loading = loading;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Set error message and trigger change detection.
+   * @param error - The error message
+   */
+  private setError(error: string): void {
+    this.error = error;
+    this.loading = false;
+    this.cdr.markForCheck();
+  }
+
+  /** Cleanup on component destroy. */
+  ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /** Open dialog to edit current user. */
+  openEdit(): void {
+    if (!this.currentUser) return;
+    const dialog = this.dialog.open(DialogEdit);
+    dialog.componentInstance.user = new User(
+      this.currentUser.toJSON()
+    );
+    dialog.afterClosed().subscribe((result) => {
+      if (result) this.saveUser(result);
+    });
+  }
+
+  /**
+   * Save updated user to Firestore.
+   * @param updatedUser - The updated user data
+   */
+  private async saveUser(updatedUser: User): Promise<void> {
+    if (!this.currentUser?.id) return;
+    try {
+      const userDocRef = doc(
+        this.firestore,
+        'users',
+        this.currentUser.id
+      );
+      await runInInjectionContext(this.injector, async () =>
+        updateDoc(userDocRef, updatedUser.toJSON())
+      );
+      this.currentUser = updatedUser;
+      this.cdr.markForCheck();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Unknown error';
+      this.setError(`Save failed: ${message}`);
+    }
   }
 }

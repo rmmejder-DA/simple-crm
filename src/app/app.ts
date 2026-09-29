@@ -12,7 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-
+import {MatMenuModule} from '@angular/material/menu';
 @Component({
   selector: 'app-root',
   imports: [MatToolbarModule,
@@ -30,7 +30,8 @@ import { MatNativeDateModule } from '@angular/material/core';
     MatInputModule,
     MatFormFieldModule,
     MatDatepickerModule,
-    MatNativeDateModule],
+    MatNativeDateModule,
+    MatMenuModule],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
